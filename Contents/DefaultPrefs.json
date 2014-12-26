@@ -1,0 +1,1 @@
+[	{        "id":       "adult_cat_bool",        "label":    "Allow Adult & Mature Categories",        "type":     "bool",        "default":  "false"    },]

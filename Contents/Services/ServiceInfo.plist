@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0">
+<dict>
+	<key>URL</key>
+	<dict>
+		<key>IpithosAvTv</key>
+		<dict>
+			<key>URLPatterns</key>
+			<array>
+				<string>http://www.ipithos.to/.+</string>
+				<string>http://ipithos.to/.+</string>
+			</array>
+		</dict>
+		
+		<key>HindiLinks4uAvTv</key>
+		<dict>
+			<key>URLPatterns</key>
+			<array>
+				<string>http://www.hindilinks4u.to/.+</string>
+				<string>http://hindilinks4u.to/.+</string>
+			</array>
+		</dict>
+		
+		<key>FilmShowOnlineAvTv</key>
+		<dict>
+			<key>URLPatterns</key>
+			<array>
+				<string>http://www.filmshowonline.net/.+</string>
+				<string>http://filmshowonline.net/.+</string>
+			</array>
+		</dict>
+	</dict>
+</dict>
+</plist>

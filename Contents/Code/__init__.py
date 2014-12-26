@@ -81,7 +81,9 @@ def MainMenu():
 def ShowCategory(title, category, page_count):
 
 	categorytitle = title
-	oc = ObjectContainer(title1 = title)
+	title1 = category.split('/')
+	title1 = title1[len(title1)-1].upper()
+	oc = ObjectContainer(title1 = title1)
 	if str(page_count) == "1":
 		page_data = HTML.ElementFromURL(str(category))
 	else:
@@ -91,11 +93,11 @@ def ShowCategory(title, category, page_count):
 	for each in movies:
 		url = each.xpath("div/a/@href")
 		#Log("url--------" + str(url))
-		title = each.xpath("div/a/@title")[0]
+		title = unicode(each.xpath("div/a/@title")[0])
 		#Log("title--------" + str(title))
 		thumb = each.xpath("div/a/span/img/@src")
 		#Log("thumb--------" + str(thumb))
-		summary = each.xpath("div[@class='data']/p/text()")[2]
+		summary = unicode(each.xpath("div[@class='data']/p/text()")[2])
 		#Log("summary--------" + str(summary))
 
 		oc.add(DirectoryObject(
@@ -122,7 +124,7 @@ def ShowCategory(title, category, page_count):
 def EpisodeDetail(title, url, thumb, summary):
 	
 	art = common_functions.getArt(title+'+movie', False)
-	oc = ObjectContainer(title1 = title, art=art)
+	oc = ObjectContainer(title1 = unicode(title), art=art)
 	page_data = HTML.ElementFromURL(url)
 	
 	title = title
@@ -309,7 +311,7 @@ def Bookmarks(title):
 		#Log("url-----------" + url)
 		if url.find(TITLE.lower()) != -1:
 			page_data = HTML.ElementFromURL(url)
-			title = each
+			title = unicode(each)
 			try:
 				thumb = page_data.xpath("//div[@id='thumb']/img/@src")[0]
 			except:
@@ -395,11 +397,11 @@ def Search(query, page_count):
 	for each in movies:
 		url = each.xpath("div/a/@href")
 		#Log("url--------" + str(url))
-		title = each.xpath("div/a/@title")[0]
+		title = unicode(each.xpath("div/a/@title")[0])
 		#Log("title--------" + str(title))
 		thumb = each.xpath("div/a/span/img/@src")
 		#Log("thumb--------" + str(thumb))
-		summary = each.xpath("div[@class='data']/p/text()")[2]
+		summary = unicode(each.xpath("div[@class='data']/p/text()")[2])
 		#Log("summary--------" + str(summary))
 
 		oc.add(DirectoryObject(

@@ -7,7 +7,7 @@
 import common_functions
 
 TITLE = "HindiLinks4u"
-PREFIX = "/video/hindilinks4u2"
+PREFIX = "/video/hindilinks4u"
 ART = "art-default.jpg"
 ICON = "icon-hindilinks4u.png"
 ICON_LIST = "icon-list.png"
@@ -162,48 +162,49 @@ def EpisodeDetail(title, url, thumb, summary):
 	)
 	except:
 		url = ""
-	try:
-		other_url = ''
-		other_url = page_data.xpath("//div[@class='entry-content rich-content']/p/a/@href")
-		#other_url_type = page_data.xpath("//div[@class='entry-content rich-content']/p/a/@href/preceding-sibling::strong/text()")
-		Log("----------- other url ----------------")
-		Log(other_url)
-	except:
-		other_url = ""
-	i=0
-	c=0
-	while(i < len(other_url) and c < 5):
-		each = other_url[i]
-		if each.lower().find('filmshowonline') != -1:
-			Log("filmshowonline---------------" + each)
-			try:
-				c=c+1
-				oc.add(VideoClipObject(
-					url = each,
-					art = art,
-					title = str(title) + '   Alternate source ' + str(c),
-					thumb = Resource.ContentsOfURLWithFallback(url = thumb, fallback='icon-cover.png'),
-					summary = description
+	if Prefs['exp_alt_src']:
+		try:
+			other_url = ''
+			other_url = page_data.xpath("//div[@class='entry-content rich-content']/p/a/@href")
+			#other_url_type = page_data.xpath("//div[@class='entry-content rich-content']/p/a/@href/preceding-sibling::strong/text()")
+			Log("----------- other url ----------------")
+			Log(other_url)
+		except:
+			other_url = ""
+		i=0
+		c=0
+		while(i < len(other_url)):
+			each = other_url[i]
+			if each.lower().find('filmshowonline') != -1:
+				Log("filmshowonline---------------" + each)
+				try:
+					c=c+1
+					oc.add(VideoClipObject(
+						url = each,
+						art = art,
+						title = str(title) + '   Alternate source ' + str(c),
+						thumb = Resource.ContentsOfURLWithFallback(url = thumb, fallback='icon-cover.png'),
+						summary = description
+						)
 					)
-				)
-			except:
-				continue
-		if each.lower().find('ipithos') != -1:
-			each = each.replace('http://www.ipithos.to/','')
-			each = 'http://www.ipithos.to/embed-' + each + '.html'
-			try:
-				c=c+1
-				oc.add(VideoClipObject(
-					url = each,
-					art = art,
-					title = str(title) + '   Alternate source ' + str(c),
-					thumb = Resource.ContentsOfURLWithFallback(url = thumb, fallback='icon-cover.png'),
-					summary = description
+				except:
+					continue
+			if each.lower().find('ipithos') != -1:
+				each = each.replace('http://www.ipithos.to/','')
+				each = 'http://www.ipithos.to/embed-' + each + '.html'
+				try:
+					c=c+1
+					oc.add(VideoClipObject(
+						url = each,
+						art = art,
+						title = str(title) + '   Alternate source ' + str(c),
+						thumb = Resource.ContentsOfURLWithFallback(url = thumb, fallback='icon-cover.png'),
+						summary = description
+						)
 					)
-				)
-			except:
-				continue
-		i=i+1
+				except:
+					continue
+			i=i+1
 	
 	if Check(title=title,url=url):
 		oc.add(DirectoryObject(

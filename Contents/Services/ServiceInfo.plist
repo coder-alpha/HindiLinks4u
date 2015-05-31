@@ -29,6 +29,17 @@
 				<string>http://filmshowonline.net/.+</string>
 			</array>
 		</dict>
+		
+		<key>MovShareAvTv</key>
+		<dict>
+			<key>URLPatterns</key>
+			<array>
+				<string>http://embed.movshare.ch/.+</string>
+				<string>http://embed.movshare.net/.+</string>
+				<string>http://embed.videoweed.co/.+</string>
+				<string>http://embed.videoweed.es/.+</string>
+			</array>
+		</dict>
 	</dict>
 </dict>
 </plist>

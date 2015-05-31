@@ -38,49 +38,49 @@ def MetadataObjectForURL(url):
 ####################################################################################################
 def MediaObjectsForURL(url):
 
-	page_data = HTML.ElementFromURL(url)
-	url = page_data.xpath("//iframe/@src")[0]
-	#Log("url-----------" + url)
+		#Log("url-----------" + url)
 	
-
 	return [
-        	MediaObject(
-			parts = [
-				PartObject(
-					key = 
-						Callback(
-							PlayVideo,
-							url = url,
-							fmt = 'hi'
-						)
-					)
-				],
-			container = Container.MP4,
-			video_codec = VideoCodec.H264,
-			audio_codec = AudioCodec.AAC,
-			video_resolution = '720',
-			audio_channels = 2,
-			optimized_for_streaming = True if Client.Product != 'Plex Web' else False
-			)
+		MediaObject(
+			parts = [PartObject(key=Callback(PlayVideo, url=url))],
+		)
 	]
 
 ####################################################################################################
 @indirect
-def PlayVideo(url, fmt):
+def PlayVideo(url):
 
-	HTTP.Headers['User-Agent'] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36"
-	HTTP.Headers['Referer'] = url
-	
-	page_data = HTML.ElementFromURL(url)
-	name = page_data.xpath("//./@href")[0].split('&')[3].replace('q=','')
+	try:
+		page_data = HTML.ElementFromURL(url)
+		url = page_data.xpath("//iframe/@src")[0]
+		
+		page_data = HTML.ElementFromURL(url)
 
-	keys = page_data.xpath("//div[@id='player_code']/script/text()")[1]
-	key = re.findall ( '\|(.*\n?)\|\|182', keys, re.MULTILINE)[0].split('|')
-	key = key[len(key)-1]
-	dl = re.findall ( '\|(.*\n?)\|file', keys, re.MULTILINE)[0].split('|')
-	dl = dl[len(dl)-1]
-	
-	url = 'http://' + dl + '.ipithos.to:182/d/' + key + '/' + name
-	#url = 'http://dl2.ipithos.to:182/d/ry6wt6x43o4pc44uocruqgp6tl32grxcjxsx7oxya3hbltjowerastfd/Kiss_Kis_Ko__2004__-_Part_-_1.mp4.mp4'
+		keys = page_data.xpath("//div[@id='player_code']/script/text()")[1]
+		keys.replace(u'\u007C','|')
 
-	return IndirectResponse(VideoClipObject, key=url)
+		key = re.findall ( '\|(.*\n?)\|182', keys, re.MULTILINE)[0].split('|')
+		key = key[len(key)-1]
+		if len(key) == 0:
+			key = re.findall ( '\|(.*\n?)182', keys, re.MULTILINE)[0].split('|')
+			key = key[len(key)-3]
+
+		dl = re.findall ( '\|(.*\n?)\|file', keys, re.MULTILINE)[0].split('|')
+		dl = dl[len(dl)-1]
+		
+		name4 = keys.split('|')[8]
+		name3 = keys.split('|')[9]
+		name2 = keys.split('|')[10]
+		name1 = keys.split('|')[11]
+		
+		if name1 == key:
+			name1 = ''
+		name = name1 + name2 + '.' + name3 + '.' + name4
+		
+		url0 = 'http://' + dl + '.ipithos.to:182/d/' + key + '/' + name
+		# http://dl3.ipithos.to:182/d/r46rm3743o4pc44ujkruegxt3igaynl52x6jia2h4itii7r72kfwp462/Big_Game__2014___In_Hindi_.flv.mp4
+	except:
+		url0 = url
+
+
+	return IndirectResponse(VideoClipObject, key=url0)

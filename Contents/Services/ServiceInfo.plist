@@ -11,7 +11,14 @@
 				<string>http://ipithos.to/.+</string>
 			</array>
 		</dict>
-		
+		<key>PlayedAvTv</key>
+		<dict>
+			<key>URLPatterns</key>
+			<array>
+				<string>http://www.played.to/.+</string>
+				<string>http://played.to/.+</string>
+			</array>
+		</dict>
 		<key>HindiLinks4uAvTv</key>
 		<dict>
 			<key>URLPatterns</key>

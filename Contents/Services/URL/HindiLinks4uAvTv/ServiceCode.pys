@@ -26,10 +26,48 @@ def MetadataObjectForURL(url):
 	rate = re.sub(r'(?is)/10.+', '', rate)
 	rate = rate.replace(' ', '')
 	ratingvalue = url
+	
+	try:
+		page_data = HTML.ElementFromURL(url)
+		url = page_data.xpath("//iframe/@src")[0]
+		
+		if 'ipithos' in url:
+			page_data = HTML.ElementFromURL(url)
+
+			keys = page_data.xpath("//div[@id='player_code']/script/text()")[1]
+			keys.replace(u'\u007C','|')
+
+			key = re.findall ( '\|(.*\n?)\|182', keys, re.MULTILINE)[0].split('|')
+			key = key[len(key)-1]
+			if len(key) == 0:
+				key = re.findall ( '\|(.*\n?)182', keys, re.MULTILINE)[0].split('|')
+				key = key[len(key)-3]
+
+			dl = re.findall ( '\|(.*\n?)\|file', keys, re.MULTILINE)[0].split('|')
+			dl = dl[len(dl)-1]
+			
+			name4 = keys.split('|')[8]
+			name3 = keys.split('|')[9]
+			name2 = keys.split('|')[10]
+			name1 = keys.split('|')[11]
+			
+			if name1 == key:
+				name1 = ''
+			name = name1 + name2 + '.' + name3 + '.' + name4
+			
+			url0 = 'http://' + dl + '.ipithos.to:182/d/' + key + '/' + name
+			# http://dl3.ipithos.to:182/d/r46rm3743o4pc44ujkruegxt3igaynl52x6jia2h4itii7r72kfwp462/Big_Game__2014___In_Hindi_.flv.mp4
+		else:
+			url = page_data.xpath(".//div[@class='entry-content rich-content']//@href")
+			for each in url:
+				if 'played' in each:
+					url0 = each
+	except:
+		url0 = url
 
 	return VideoClipObject(
 		title = title,
-		summary = summary,
+		summary = summary + '\n\n' + url0,
 		rating = float(rate),
 		thumb = Resource.ContentsOfURLWithFallback(url = thumb, fallback='icon-cover.png'),
 		rating_key = ratingvalue
@@ -42,7 +80,13 @@ def MediaObjectsForURL(url):
 	
 	return [
 		MediaObject(
-			parts = [PartObject(key=Callback(PlayVideo, url=url))],
+			container = Container.MP4,
+			video_codec = VideoCodec.H264,
+			video_resolution = '720',
+			audio_codec = AudioCodec.AAC,
+			audio_channels = 2,
+			optimized_for_streaming = True,
+			parts = [PartObject(key=Callback(PlayVideo, url=url))]
 		)
 	]
 
@@ -54,31 +98,37 @@ def PlayVideo(url):
 		page_data = HTML.ElementFromURL(url)
 		url = page_data.xpath("//iframe/@src")[0]
 		
-		page_data = HTML.ElementFromURL(url)
+		if 'ipithos' in url:
+			page_data = HTML.ElementFromURL(url)
 
-		keys = page_data.xpath("//div[@id='player_code']/script/text()")[1]
-		keys.replace(u'\u007C','|')
+			keys = page_data.xpath("//div[@id='player_code']/script/text()")[1]
+			keys.replace(u'\u007C','|')
 
-		key = re.findall ( '\|(.*\n?)\|182', keys, re.MULTILINE)[0].split('|')
-		key = key[len(key)-1]
-		if len(key) == 0:
-			key = re.findall ( '\|(.*\n?)182', keys, re.MULTILINE)[0].split('|')
-			key = key[len(key)-3]
+			key = re.findall ( '\|(.*\n?)\|182', keys, re.MULTILINE)[0].split('|')
+			key = key[len(key)-1]
+			if len(key) == 0:
+				key = re.findall ( '\|(.*\n?)182', keys, re.MULTILINE)[0].split('|')
+				key = key[len(key)-3]
 
-		dl = re.findall ( '\|(.*\n?)\|file', keys, re.MULTILINE)[0].split('|')
-		dl = dl[len(dl)-1]
-		
-		name4 = keys.split('|')[8]
-		name3 = keys.split('|')[9]
-		name2 = keys.split('|')[10]
-		name1 = keys.split('|')[11]
-		
-		if name1 == key:
-			name1 = ''
-		name = name1 + name2 + '.' + name3 + '.' + name4
-		
-		url0 = 'http://' + dl + '.ipithos.to:182/d/' + key + '/' + name
-		# http://dl3.ipithos.to:182/d/r46rm3743o4pc44ujkruegxt3igaynl52x6jia2h4itii7r72kfwp462/Big_Game__2014___In_Hindi_.flv.mp4
+			dl = re.findall ( '\|(.*\n?)\|file', keys, re.MULTILINE)[0].split('|')
+			dl = dl[len(dl)-1]
+			
+			name4 = keys.split('|')[8]
+			name3 = keys.split('|')[9]
+			name2 = keys.split('|')[10]
+			name1 = keys.split('|')[11]
+			
+			if name1 == key:
+				name1 = ''
+			name = name1 + name2 + '.' + name3 + '.' + name4
+			
+			url0 = 'http://' + dl + '.ipithos.to:182/d/' + key + '/' + name
+			# http://dl3.ipithos.to:182/d/r46rm3743o4pc44ujkruegxt3igaynl52x6jia2h4itii7r72kfwp462/Big_Game__2014___In_Hindi_.flv.mp4
+		else:
+			url = page_data.xpath(".//div[@class='entry-content rich-content']//@href")
+			for each in url:
+				if 'played' in each:
+					url0 = each
 	except:
 		url0 = url
 

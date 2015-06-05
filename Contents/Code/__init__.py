@@ -53,9 +53,31 @@ def Menu():
 	oc.add(DirectoryObject(key = Callback(ShowMenu, title="Sort Movies By Year"), title = "Sort Movies By Year", thumb = R(ICON_MOVIES)))
 	oc.add(DirectoryObject(key = Callback(ShowMenu, title="Sort Movies By Actor"), title = "Sort Movies By Actor", thumb = R(ICON_MOVIES)))
 	oc.add(DirectoryObject(key = Callback(ShowMenu, title="Sort Movies By Actress"), title = "Sort Movies By Actress", thumb = R(ICON_MOVIES)))
+	oc.add(DirectoryObject(key = Callback(SearchQueueMenu, title = 'Search Queue'), title = 'Search Queue', summary='Search using saved search terms', thumb = R(ICON_SEARCH)))
 
 	return oc
 
+@route(PREFIX + "/searchQueueMenu")
+def SearchQueueMenu(title):
+	oc2 = ObjectContainer(title2='Search Using Term')
+	#add a way to clear bookmarks list
+	oc2.add(DirectoryObject(
+		key = Callback(ClearSearches),
+		title = "Clear Search Queue",
+		thumb = R(ICON_SEARCH),
+		summary = "CAUTION! This will clear your entire search queue list!"
+		)
+	)
+	for each in Dict:
+		query = Dict[each]
+		#Log("each-----------" + each)
+		#Log("query-----------" + query)
+		if each.find(TITLE.lower()) != -1 and 'MyCustomSearch' in each and query != 'removed':
+			oc2.add(DirectoryObject(key = Callback(Search, query = query, page_count=1), title = query, thumb = R(ICON_SEARCH))
+		)
+
+	return oc2
+	
 @route(PREFIX + "/showmenu")
 def ShowMenu(title):
 	
@@ -191,19 +213,37 @@ def EpisodeDetail(title, url, thumb, summary):
 		trailer_url = ""
 
 	try:
-		#url = page_data.xpath("//iframe/@src")[0]
+		url = page_data.xpath("//iframe/@src")[0]
 		#Log("----------- url ----------------")
 		#Log(url)
-		oc.add(VideoClipObject(
-			url = url,
-			art = art,
-			title = title,
-			thumb = Resource.ContentsOfURLWithFallback(url = thumb, fallback='MoviePosterUnavailable.jpg'),
-			summary = description
-		)
-	)
+		if 'ipithos' in url:
+			oc.add(VideoClipObject(
+				url = url,
+				art = art,
+				title = title + ' --- Ipithos.to server',
+				thumb = Resource.ContentsOfURLWithFallback(url = thumb, fallback='MoviePosterUnavailable.jpg'),
+				summary = description
+				)
+			)
 	except:
 		url = ""
+		
+	try:
+		url1 = page_data.xpath(".//div[@class='entry-content rich-content']//@href")
+		for each in url1:
+			if 'played' in each:
+				murl = each
+				oc.add(VideoClipObject(
+				url = murl,
+				art = art,
+				title = title + ' --- Played.to server',
+				thumb = Resource.ContentsOfURLWithFallback(url = thumb, fallback='MoviePosterUnavailable.jpg'),
+				summary = description
+				)
+			)
+	except:
+		url = ""
+
 	if Prefs['exp_alt_src']:
 		try:
 			other_url = ''
@@ -397,7 +437,7 @@ def Bookmarks(title):
 	for each in Dict:
 		url = Dict[each]
 		#Log("url-----------" + url)
-		if url.find(TITLE.lower()) != -1:
+		if url.find(TITLE.lower()) != -1 and 'http' in url:
 			page_data = HTML.ElementFromURL(url)
 			title = unicode(each)
 			try:
@@ -466,13 +506,30 @@ def RemoveBookmark(title, url):
 @route(PREFIX + "/clearbookmarks")
 def ClearBookmarks():
 
-	Dict.Reset()
+	for each in Dict:
+		if each.find(TITLE.lower()) != -1 and 'http' in each:
+			Dict[each] = 'removed'
+	Dict.Save()
 	return ObjectContainer(header="My Bookmarks", message='Your bookmark list will be cleared soon.')
+
+######################################################################################
+# Clears the Dict that stores the search list
+	
+@route(PREFIX + "/clearsearches")
+def ClearSearches():
+
+	for each in Dict:
+		if each.find(TITLE.lower()) != -1 and 'MyCustomSearch' in each:
+			Dict[each] = 'removed'
+	Dict.Save()
+	return ObjectContainer(header="Search Queue", message='Your Search Queue list will be cleared soon.')
 
 ####################################################################################################
 @route(PREFIX + "/search")
 def Search(query, page_count):
 
+	Dict[TITLE.lower() +'MyCustomSearch'+query] = query
+	Dict.Save()
 	oc = ObjectContainer(title2='Search Results')
 	if str(page_count) == "1":
 		data = HTTP.Request(SEARCH_URL + '?s=%s' % String.Quote(query, usePlus=True), headers="").content
@@ -483,22 +540,39 @@ def Search(query, page_count):
 	
 	movies = page_data.xpath("//div[contains(@class,'-post-')]")
 	for each in movies:
-		url = each.xpath("div/a/@href")
-		#Log("url--------" + str(url))
 		title = unicode(each.xpath("div/a/@title")[0])
 		#Log("title--------" + str(title))
-		thumb = each.xpath("div/a/span/img/@src")
-		#Log("thumb--------" + str(thumb))
-		summary = unicode(each.xpath("div[@class='data']/p/text()")[2])
-		#Log("summary--------" + str(summary))
+		if 'In Hindi' in title:
+			url = each.xpath("div/a/@href")
+			#Log("url--------" + str(url))
+			thumb = each.xpath("div/a/span/img/@src")
+			#Log("thumb--------" + str(thumb))
+			summary = unicode(each.xpath("div[@class='data']/p/text()")[2])
+			#Log("summary--------" + str(summary))
 
-		oc.add(DirectoryObject(
-			key = Callback(EpisodeDetail, title = title, url = url, thumb = thumb, summary = summary),
-			title = title,
-			summary = summary,
-			thumb = Resource.ContentsOfURLWithFallback(url = thumb, fallback=R(ICON_MOVIES))
+			oc.add(DirectoryObject(
+				key = Callback(EpisodeDetail, title = title, url = url, thumb = thumb, summary = summary),
+				title = title,
+				summary = summary,
+				thumb = Resource.ContentsOfURLWithFallback(url = thumb, fallback='MoviePosterUnavailable.jpg')
+				)
 			)
-		)
+		else:
+			if Prefs['show_unsupported']:
+				url = each.xpath("div/a/@href")
+				#Log("url--------" + str(url))	
+				thumb = each.xpath("div/a/span/img/@src")
+				#Log("thumb--------" + str(thumb))
+				summary = unicode(each.xpath("div[@class='data']/p/text()")[2])
+				#Log("summary--------" + str(summary))
+
+				oc.add(DirectoryObject(
+					key = Callback(EpisodeDetail, title = title, url = url, thumb = thumb, summary = summary),
+					title = title,
+					summary = summary,
+					thumb = Resource.ContentsOfURLWithFallback(url = thumb, fallback='MoviePosterUnavailable.jpg')
+					)
+				)
 
 	oc.add(NextPageObject(
 		key = Callback(Search, query=query, page_count = int(page_count) + 1),

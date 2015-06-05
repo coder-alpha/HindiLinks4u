@@ -5,11 +5,10 @@ HTTP_HEADERS = {
 	'Accept-Encoding:	gzip, deflate',
 	'Accept-Language:	en-US,en;q=0.5',
 	'Connection:		keep-alive',
-	'Referer:		http://ipithos.to',
+	'Referer:		http://www.ipithos.to',
 	'User-Agent:		Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20100101 Firefox/33.0'
 }
 
-BASE_URL = 'http://ipithos.to/'
 ########################################################################################
 def NormalizeURL(url):
 
@@ -20,35 +19,26 @@ def MetadataObjectForURL(url):
 	
 	try:
 		page_data = HTML.ElementFromURL(url)
-
 		keys = page_data.xpath("//div[@id='player_code']/script/text()")[1]
 		keys.replace(u'\u007C','|')
 
 		key = re.findall ( '\|(.*\n?)\|182', keys, re.MULTILINE)[0].split('|')
 		key = key[len(key)-1]
+		if len(key) == 0:
+			key = re.findall ( '\|(.*\n?)182', keys, re.MULTILINE)[0].split('|')
+			key = key[len(key)-3]
 
 		dl = re.findall ( '\|(.*\n?)\|file', keys, re.MULTILINE)[0].split('|')
 		dl = dl[len(dl)-1]
-		
-		#name4 = re.findall ( '\|(.*\n?)\|key', keys, re.MULTILINE)[0].split('|')
-		#name4 = name4[len(name4)-1]
-		
-		#name3 = re.findall ( '\|(.*\n?)\|name4', keys, re.MULTILINE)[0].split('|')
-		#name3 = name3[len(name3)-1]
-		
-		#name2 = re.findall ( '\|(.*\n?)\|name3', keys, re.MULTILINE)[0].split('|')
-		#name2 = name2[len(name2)-1]
-		
-		#name1 = re.findall ( '\|(.*\n?)\|name2', keys, re.MULTILINE)[0].split('|')
-		#name1 = name1[len(name1)-1]
 		
 		name4 = keys.split('|')[8]
 		name3 = keys.split('|')[9]
 		name2 = keys.split('|')[10]
 		name1 = keys.split('|')[11]
-		name = name2 + '.' + name3 + '.' + name4
-
-		#name = 'Die_Another_Day__2002__-_Hindi_Dubbed.mkv.mp4'
+		
+		if name1 == key:
+			name1 = ''
+		name = name1 + name2 + '.' + name3 + '.' + name4
 		
 		url0 = 'http://' + dl + '.ipithos.to:182/d/' + key + '/' + name
 		# http://dl3.ipithos.to:182/d/r46rm3743o4pc44ujkruegxt3igaynl52x6jia2h4itii7r72kfwp462/Big_Game__2014___In_Hindi_.flv.mp4
@@ -56,23 +46,28 @@ def MetadataObjectForURL(url):
 		url0 = url
 		
 	title = 'Ipithos Redirect Page'
-	summary = url0
+	summary = 'Summary info Page'
 		
-
 	return VideoClipObject(
 		title = title,
-		summary = summary,
-		thumb = None,
+		summary = summary + '\n\n' + url0,
+		thumb = Resource.ContentsOfURLWithFallback(url = 'thumb', fallback='icon-cover.png')
 	)
 	
 ####################################################################################################
 def MediaObjectsForURL(url):
 
-		#Log("url-----------" + url)
+	#Log("url-----------" + url)
 	
 	return [
 		MediaObject(
-			parts = [PartObject(key=Callback(PlayVideo, url=url))],
+			container = Container.MP4,
+			video_codec = VideoCodec.H264,
+			video_resolution = '720',
+			audio_codec = AudioCodec.AAC,
+			audio_channels = 2,
+			optimized_for_streaming = True,
+			parts = [PartObject(key=Callback(PlayVideo, url=url))]
 		)
 	]
 
@@ -82,35 +77,26 @@ def PlayVideo(url):
 
 	try:
 		page_data = HTML.ElementFromURL(url)
-
 		keys = page_data.xpath("//div[@id='player_code']/script/text()")[1]
 		keys.replace(u'\u007C','|')
 
 		key = re.findall ( '\|(.*\n?)\|182', keys, re.MULTILINE)[0].split('|')
 		key = key[len(key)-1]
+		if len(key) == 0:
+			key = re.findall ( '\|(.*\n?)182', keys, re.MULTILINE)[0].split('|')
+			key = key[len(key)-3]
 
 		dl = re.findall ( '\|(.*\n?)\|file', keys, re.MULTILINE)[0].split('|')
 		dl = dl[len(dl)-1]
-		
-		#name4 = re.findall ( '\|(.*\n?)\|key', keys, re.MULTILINE)[0].split('|')
-		#name4 = name4[len(name4)-1]
-		
-		#name3 = re.findall ( '\|(.*\n?)\|name4', keys, re.MULTILINE)[0].split('|')
-		#name3 = name3[len(name3)-1]
-		
-		#name2 = re.findall ( '\|(.*\n?)\|name3', keys, re.MULTILINE)[0].split('|')
-		#name2 = name2[len(name2)-1]
-		
-		#name1 = re.findall ( '\|(.*\n?)\|name2', keys, re.MULTILINE)[0].split('|')
-		#name1 = name1[len(name1)-1]
 		
 		name4 = keys.split('|')[8]
 		name3 = keys.split('|')[9]
 		name2 = keys.split('|')[10]
 		name1 = keys.split('|')[11]
-		name = name2 + '.' + name3 + '.' + name4
-
-		#name = 'Die_Another_Day__2002__-_Hindi_Dubbed.mkv.mp4'
+		
+		if name1 == key:
+			name1 = ''
+		name = name1 + name2 + '.' + name3 + '.' + name4
 		
 		url0 = 'http://' + dl + '.ipithos.to:182/d/' + key + '/' + name
 		# http://dl3.ipithos.to:182/d/r46rm3743o4pc44ujkruegxt3igaynl52x6jia2h4itii7r72kfwp462/Big_Game__2014___In_Hindi_.flv.mp4

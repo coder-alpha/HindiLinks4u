@@ -1,4 +1,4 @@
-HindiLinks4u.bundle
+HindiLinks4u.bundle - - - DISCONTINUED (NO LONGER MAINTAINED)
 ===================
 
 This is a plugin that creates a new channel in Plex Media Server to view content indexed by the website www.hindilinks4u.to
